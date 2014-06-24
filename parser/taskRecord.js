@@ -3,7 +3,7 @@ var stream  = require('stream')
   , util    = require('util')
   , _       = require('underscore')
 
-var PREFIX_TASK = 'TaskRecord{';
+var PREFIX = 'TaskRecord{';
 
 var Transform = stream.Transform;
 
@@ -46,9 +46,12 @@ TaskRecordParser.prototype._transform = function(chunk, encoding, cb) {
   }
 
   var line = chunk.toString('utf8').trim();
-  var idx  = line.indexOf(PREFIX_TASK);
+  var idx  = line.indexOf(PREFIX);
   if (idx >= 0) {
-    var taskInfoArray = line.substring(idx + PREFIX_TASK.length, line.length -1).split(' ');
+    var startIdx = idx + PREFIX.length;
+    var endIdx   = line.length - 1;
+
+    var taskInfoArray = line.substring(startIdx, endIdx).split(' ');
     var taskInfo      = parseTaskInfo(taskInfoArray);
 
     // "* TaskRecord{42d6 ..."
