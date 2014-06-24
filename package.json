@@ -1,0 +1,22 @@
+{
+  "name": "activitykit",
+  "version": "0.0.0",
+  "description": "Pull various activity infomation from ActivityManagerService.",
+  "main": "activitykit.js",
+  "dependencies": {
+    "underscore": "~1.6.0",
+    "adbkit": "~2.0.9",
+    "event-stream": "~3.1.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "android",
+    "adb",
+    "activity"
+  ],
+  "author": "chitacan",
+  "license": "BSD"
+}
