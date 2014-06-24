@@ -19,13 +19,23 @@ TaskRecordParser.prototype._transform = function(chunk, encoding, cb) {
 
   function parseTaskInfo(taskInfoArray) {
     // see com.android.server.am.TaskRecord.toString()
-    var result = {}
-    result['hash']     = taskInfoArray[0]
-    result['taskId']   = taskInfoArray[1].substring(1);
-    // this can be either 'A=' or 'I='
-    result['affinity'] = taskInfoArray[2].substring(2);
-    result['user']     = taskInfoArray[3].substring(2);
-    result['history']  = taskInfoArray[4].substring(2);
+    var result  = {}
+
+    result['hash']   = taskInfoArray[0]
+    result['taskId'] = taskInfoArray[1].substring(1);
+
+    _.each(taskInfoArray.slice(2), function(i) {
+      if (i.indexOf('U=') == 0)
+        result['userId'] = i.substring(2);
+      else if (i.indexOf('sz=') == 0)
+        result['activities'] = i.substring(3);
+      else if (i.indexOf('A=') == 0)
+        result['affinity'] = i.substring(2);
+      else if (i.indexOf('I=') == 0)
+        result['intent'] = i.substring(2);
+      else if (i.indexOf('aI=') == 0)
+        result['affinityIntent'] = i.substring(3);
+    });
 
     return result;
   }
@@ -41,10 +51,16 @@ TaskRecordParser.prototype._transform = function(chunk, encoding, cb) {
     var taskInfoArray = line.substring(idx + PREFIX_TASK.length, line.length -1).split(' ');
     var taskInfo      = parseTaskInfo(taskInfoArray);
 
+    // "* TaskRecord{42d6 ..."
     if (idx == 2) {
       this.push(JSON.stringify(taskInfo) + EOL);
-    } else {
-      this.push(line.substring(0, idx) + JSON.stringify(taskInfo) + EOL);
+    }
+    // "* Recent #1: ..."
+    else {
+      var recentInfo   = {}
+      var name         = line.substring(2, idx - 2);
+      recentInfo[name] = taskInfo;
+      this.push(JSON.stringify(recentInfo) + EOL);
     }
   } else {
     this.push(chunk);
