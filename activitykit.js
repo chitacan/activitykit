@@ -3,10 +3,12 @@ var adb     = require('adbkit')
   , es      = require('event-stream')
   , KP      = require('./parser/keyword')
   , TRP     = require('./parser/taskRecord')
+  , ARP     = require('./parser/activityRecord')
   , client  = adb.createClient();
 
-var keywordParser    = new KP();
-var taskRecordParser = new TRP();
+var keywordParser        = new KP();
+var taskRecordParser     = new TRP();
+var activityRecordParser = new ARP();
 
 client.listDevices()
 .then(function(devices) {
@@ -25,6 +27,7 @@ client.listDevices()
   .pipe(es.split())
   .pipe(keywordParser)
   .pipe(taskRecordParser)
+  .pipe(activityRecordParser)
   .pipe(process.stdout)
 })
 .catch(function(err) {
