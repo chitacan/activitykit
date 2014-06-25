@@ -60,10 +60,10 @@ TaskRecordParser.prototype._transform = function(chunk, encoding, cb) {
     }
     // "* Recent #1: ..."
     else {
-      var recentInfo   = {}
-      var name         = line.substring(2, idx - 2);
-      recentInfo[name] = taskInfo;
-      this.push(JSON.stringify(recentInfo) + EOL);
+      var result   = {}
+      var name     = line.substring(2, idx - 2);
+      result[name] = taskInfo;
+      this.push(JSON.stringify(result) + EOL);
     }
   } else {
     this.push(chunk);
