@@ -10,14 +10,16 @@ var Transform = stream.Transform;
 
 var StackParser = function(opt) {
   Transform.call(this, opt);
-  this._inStack = false;
   this._inTask  = false;
 
-  this._result = {};
+  this._result = {
+    stack  : {},
+    focused: '',
+    recent : []
+  };
   this._task   = [];
 
-  this._stackName = '';
-  this._taskName = '';
+  this._stackId = '';
 }
 
 module.exports = StackParser;
@@ -31,33 +33,35 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
     return;
   }
 
-  var result = '';
-  var line = chunk.toString('utf8').trim();
+  var result   = '';
+  var line     = chunk.toString('utf8').trim();
   var isStack  = line.indexOf(PREFIX_STACK)    == 0;
   var isTask   = line.indexOf(PREFIX_TASK )    == 0;
   var isFocus  = line.indexOf('mFocused')      == 0;
   var isRecent = line.indexOf('Recent tasks:') == 0;
 
+  // 'Stack #0:'
   if (isStack) {
-    var name = line.substring(0, line.length -1);
-    this._result[name] = [];
-    this._inStack = true;
-    this._stackName = name;
-  } else if (isTask) {
+    var stackId = line.substring(PREFIX_STACK.length, line.length - 1);
+    this._result.stack[stackId] = [];
+    this._stackId = stackId;
+  }
+  // 'Task id #2'
+  else if (isTask) {
     var task = {
-      name : line,
-      data : '',
+      taskId  : line.substring(PREFIX_TASK.length, line.length),
+      data    : '',
       history : []
     }
     this._inTask = true;
-    this._result[this._stackName].push(task);
+    this._result.stack[this._stackId].push(task);
   } else if (isFocus) {
-    this._inStack = false;
-    this._inTask = false;
+    this._inTask  = false;
   } else if (isRecent) {
+    this._inTask  = false;
   } else {
     if (this._inTask) {
-      var taskArr = this._result[this._stackName];
+      var taskArr = this._result.stack[this._stackId];
       var task    = taskArr[taskArr.length - 1];
       if (!task.data)
         task.data = JSON.parse(line);
@@ -67,6 +71,10 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
     }
   }
 
-  //this.push(line);
+  done();
+}
+
+StackParser.prototype._flush = function(done) {
+  this.push(JSON.stringify(this._result, null, 4));
   done();
 }
