@@ -31,9 +31,6 @@ client.listDevices()
   .pipe(taskRecordParser)
   .pipe(activityRecordParser)
   .pipe(stackParser)
-  .on('end', function() {
-    console.log(this._result);
-  })
   .pipe(process.stdout)
 })
 .catch(function(err) {
