@@ -4,11 +4,13 @@ var adb     = require('adbkit')
   , KP      = require('./parser/keyword')
   , TRP     = require('./parser/taskRecord')
   , ARP     = require('./parser/activityRecord')
+  , SP      = require('./parser/stack')
   , client  = adb.createClient();
 
 var keywordParser        = new KP();
 var taskRecordParser     = new TRP();
 var activityRecordParser = new ARP();
+var stackParser          = new SP();
 
 client.listDevices()
 .then(function(devices) {
@@ -28,6 +30,10 @@ client.listDevices()
   .pipe(keywordParser)
   .pipe(taskRecordParser)
   .pipe(activityRecordParser)
+  .pipe(stackParser)
+  .on('end', function() {
+    console.log(this._result);
+  })
   .pipe(process.stdout)
 })
 .catch(function(err) {
