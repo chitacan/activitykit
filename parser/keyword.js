@@ -18,7 +18,9 @@ var KEYWORD = [
   'Task id #',
   '* TaskRecord',
   '* Hist',
+  //'intent=',
   'mFocusedActivity:',
+  'Recent tasks:',
   '* Recent #',
 ];
 
