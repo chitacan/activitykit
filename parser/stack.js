@@ -12,13 +12,16 @@ var StackParser = function(opt) {
   Transform.call(this, opt);
   this._inTask   = false;
   this._inRecent = false;
+  this._inHistory = false;
 
   this._result = {
     stack  : {},
     focused: '',
     recent : []
   };
-  this._task   = [];
+  this._task   = {};
+  this._recent = {};
+  this._history = {};
 
   this._stackId = '';
 }
@@ -40,6 +43,7 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
   var isTask   = line.indexOf(PREFIX_TASK )    == 0;
   var isFocus  = line.indexOf('mFocused')      == 0;
   var isRecent = line.indexOf('Recent tasks:') == 0;
+  var isIntent = line.indexOf('intent: ')      == 0;
 
   // 'Stack #0:'
   if (isStack) {
@@ -49,13 +53,14 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
   }
   // 'Task id #2'
   else if (isTask) {
-    var task = {
+    this._task = {
       taskId  : line.substring(PREFIX_TASK.length, line.length),
       data    : '',
+      intent  : {},
       history : []
     }
     this._inTask = true;
-    this._result.stack[this._stackId].push(task);
+    this._inHistory = false;
   }
   // 'mFocusedActivity:'
   else if (isFocus) {
@@ -66,17 +71,33 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
   else if (isRecent) {
     this._inTask  = false;
     this._inRecent = true;
-  } else {
+  }
+  // 'intent:'
+  else if (isIntent) {
     if (this._inTask) {
-      var taskArr = this._result.stack[this._stackId];
-      var task    = taskArr[taskArr.length - 1];
-      if (!task.data)
-        task.data = JSON.parse(line);
+      this._task.intent = JSON.parse(line.split(' ')[1]);
+      this._result.stack[this._stackId].push(this._task);
+    } else if (this._inRecent) {
+      this._recent.intent = JSON.parse(line.split(' ')[1]);
+      this._result.recent.push(this._recent);
+    } else if (this._inHistory) {
+      var k = Object.keys(this._history)[0]
+      this._history[k].intent = JSON.parse(line.split(' ')[1]);
+      var stack = this._result.stack[this._stackId];
+      stack[stack.length - 1].history.push(this._history);
+    }
+  } else {
+    // task data or history
+    if (this._inTask) {
+      if (!this._task.data)
+        this._task.data = JSON.parse(line);
       else {
-        task.history.push(JSON.parse(line));
+        this._inTask = false;
+        this._inHistory = true;
+        this._history = JSON.parse(line);
       }
     } else if (this._inRecent) {
-      this._result.recent.push(JSON.parse(line));
+      this._recent = JSON.parse(line);
     }
   }
 
