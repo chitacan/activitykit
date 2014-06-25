@@ -10,7 +10,8 @@ var Transform = stream.Transform;
 
 var StackParser = function(opt) {
   Transform.call(this, opt);
-  this._inTask  = false;
+  this._inTask   = false;
+  this._inRecent = false;
 
   this._result = {
     stack  : {},
@@ -55,10 +56,16 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
     }
     this._inTask = true;
     this._result.stack[this._stackId].push(task);
-  } else if (isFocus) {
+  }
+  // 'mFocusedActivity:'
+  else if (isFocus) {
     this._inTask  = false;
-  } else if (isRecent) {
+    this._result.focused = JSON.parse(line.split(' ')[1]);
+  }
+  // 'Recent tasks:'
+  else if (isRecent) {
     this._inTask  = false;
+    this._inRecent = true;
   } else {
     if (this._inTask) {
       var taskArr = this._result.stack[this._stackId];
@@ -68,6 +75,8 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
       else {
         task.history.push(JSON.parse(line));
       }
+    } else if (this._inRecent) {
+      this._result.recent.push(JSON.parse(line));
     }
   }
 
