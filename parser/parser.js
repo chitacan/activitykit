@@ -50,11 +50,11 @@ Parser.prototype.parseActivityInfo = function(info) {
   // see com.android.server.am.ActivityRecord.toString();
   var result = {};
 
-  result['name']   = '';
-  result['hash']   = arr[0];
-  result['userId'] = arr[1].substring(1);
-  result['intent'] = arr[2]
-  result['taskId'] = arr[3].substring(1);
+  result['name']      = '';
+  result['hash']      = arr[0];
+  result['userId']    = arr[1].substring(1);
+  result['component'] = arr[2]
+  result['taskId']    = arr[3].substring(1);
 
   return result;
 }
