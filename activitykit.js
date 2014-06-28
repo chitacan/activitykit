@@ -1,18 +1,18 @@
-var adb     = require('adbkit')
-  , fs      = require('fs')
-  , es      = require('event-stream')
-  , KP      = require('./parser/keyword')
-  , TRP     = require('./parser/taskRecord')
-  , ARP     = require('./parser/activityRecord')
-  , SP      = require('./parser/stack')
-  , IP      = require('./parser/intent')
-  , client  = adb.createClient();
+var adb    = require('adbkit')
+  , fs     = require('fs')
+  , es     = require('event-stream')
+  , KW     = require('./parser/keyword')
+  , TR     = require('./parser/taskRecord')
+  , AR     = require('./parser/activityRecord')
+  , ST     = require('./parser/stack')
+  , IN     = require('./parser/intent')
+  , client = adb.createClient();
 
-var keywordParser        = new KP();
-var taskRecordParser     = new TRP();
-var activityRecordParser = new ARP();
-var stackParser          = new SP();
-var intentParser         = new IP();
+var keywordParser        = new KW()
+  , taskRecordParser     = new TR()
+  , activityRecordParser = new AR()
+  , stackParser          = new ST()
+  , intentParser         = new IN();
 
 client.listDevices()
 .then(function(devices) {
