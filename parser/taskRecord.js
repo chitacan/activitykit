@@ -28,10 +28,8 @@ TaskRecord.prototype._transform = function(chunk, encoding, done) {
     }
     // "* Recent #1: ..."
     else {
-      var result   = {}
-      var name     = line.substring(2, idx - 2);
-      result[name] = taskInfo;
-      this.push(JSON.stringify(result) + P.EOL);
+      taskInfo['name'] = line.substring(2, idx - 2);
+      this.push(JSON.stringify(taskInfo) + P.EOL);
     }
   } else {
     this.push(chunk);

@@ -24,22 +24,18 @@ ActivityRecord.prototype._transform = function(chunk, encoding, done) {
     var endIdx   = line.length - 1;
 
     //var activityInfoArray = line.substring(startIdx, endIdx).split(' ');
-    var activityInfo      = this.parseActivityInfo(line);
+    var result = this.parseActivityInfo(line);
 
-    var result = {};
-    var name;
     if (line.indexOf('* Hist') == 0) {
-      name = line.substring(2, idx - 2);
-      result[name] = activityInfo;
+      result['name'] = line.substring(2, idx - 2);
       this.push(JSON.stringify(result) + P.EOL);
     } else if (line.indexOf('Recent #') == 0) {
-      name = line.substring(0, idx - 2);
-      result[name] = activityInfo;
+      result['name'] = line.substring(0, idx - 2);
       this.push(JSON.stringify(result) + P.EOL);
     } else {
       // 'mFocusedActivity:'
       name = line.substring(0, idx);
-      name += JSON.stringify(activityInfo);
+      name += JSON.stringify(result);
       this.push(name + P.EOL);
     }
   } else {
