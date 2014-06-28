@@ -1,19 +1,6 @@
-var stream  = require('stream')
-  , EOL     = require('os').EOL
-  , util    = require('util')
-  , _       = require('underscore')
+var P = require('./parser');
 
-var Transform = stream.Transform;
-
-var KeywordParser = function(opt) {
-  Transform.call(this, opt);
-}
-
-module.exports = KeywordParser;
-
-util.inherits(KeywordParser, Transform);
-
-var KEYWORD = [
+var KEYWORDS = [
   'Stack #',
   'Task id #',
   '* TaskRecord',
@@ -25,22 +12,24 @@ var KEYWORD = [
   '* Recent #',
 ];
 
-KeywordParser.prototype._transform = function(chunk, encoding, cb) {
+var Keyword = function(opt) {
+  P.call(this, opt);
+}
+
+module.exports = Keyword;
+
+P.yeild(Keyword, P);
+
+Keyword.prototype._transform = function(chunk, encoding, done) {
   if (chunk.length === 0) {
-    cb();
+    done();
     return;
   }
 
-  var line = chunk.toString('utf8').trim();
-  var key  = _.find(KEYWORD, function(key) {
-    return line.indexOf(key) == 0;
-  });
-
-  if (key) {
-    this.push(line + EOL);
-  } else {
-    this.emit('non-keyword', line + EOL);
+  var line = this.trim(chunk);
+  if (this.contains(line, KEYWORDS)) {
+    this.push(line + P.EOL);
   }
 
-  cb();
+  done();
 }

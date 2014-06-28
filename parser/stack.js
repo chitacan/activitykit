@@ -1,15 +1,10 @@
-var stream  = require('stream')
-  , EOL     = require('os').EOL
-  , util    = require('util')
-  , _       = require('underscore')
+var P = require('./parser');
 
 var PREFIX_STACK = 'Stack #';
 var PREFIX_TASK  = 'Task id #';
 
-var Transform = stream.Transform;
-
-var StackParser = function(opt) {
-  Transform.call(this, opt);
+var Stack = function(opt) {
+  P.call(this, opt);
   this._inTask   = false;
   this._inRecent = false;
   this._inHistory = false;
@@ -26,11 +21,11 @@ var StackParser = function(opt) {
   this._stackId = '';
 }
 
-module.exports = StackParser;
+module.exports = Stack;
 
-util.inherits(StackParser, Transform);
+P.yeild(Stack);
 
-StackParser.prototype._transform = function(chunk, encoding, done) {
+Stack.prototype._transform = function(chunk, encoding, done) {
 
   if (chunk.length === 0) {
     done();
@@ -104,7 +99,7 @@ StackParser.prototype._transform = function(chunk, encoding, done) {
   done();
 }
 
-StackParser.prototype._flush = function(done) {
+Stack.prototype._flush = function(done) {
   this.push(JSON.stringify(this._result, null, 4));
   done();
 }
