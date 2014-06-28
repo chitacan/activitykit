@@ -1,24 +1,27 @@
-var P = require('./parser');
+var P = require('./parser')
+  , _ = require('underscore')
 
 var PREFIX_STACK = 'Stack #';
 var PREFIX_TASK  = 'Task id #';
 
 var Stack = function(opt) {
   P.call(this, opt);
-  this._inTask   = false;
-  this._inRecent = false;
-  this._inHistory = false;
+  this._in = '';
 
   this._result = {
-    stack  : {},
+    stack  : {
+      name: 'Activity Stack',
+      children: []
+    },
     focused: '',
     recent : []
   };
-  this._task   = {};
-  this._recent = {};
+  this._stack   = {};
+  this._task    = {};
+  this._recent  = {};
   this._history = {};
 
-  this._stackId = '';
+  this._stackName = '';
 }
 
 module.exports = Stack;
@@ -33,7 +36,7 @@ Stack.prototype._transform = function(chunk, encoding, done) {
   }
 
   var result   = '';
-  var line     = chunk.toString('utf8').trim();
+  var line     = this.trim(chunk);
   var isStack  = line.indexOf(PREFIX_STACK)    == 0;
   var isTask   = line.indexOf(PREFIX_TASK )    == 0;
   var isFocus  = line.indexOf('mFocused')      == 0;
@@ -42,56 +45,60 @@ Stack.prototype._transform = function(chunk, encoding, done) {
 
   // 'Stack #0:'
   if (isStack) {
-    var stackId = line.substring(PREFIX_STACK.length, line.length - 1);
-    this._result.stack[stackId] = [];
-    this._stackId = stackId;
+    if (!_.isEmpty(this._stack))
+      this._result.stack.children.push(this._stack);
+
+    this._stack = {
+      name: line,
+      children: []
+    }
   }
   // 'Task id #2'
   else if (isTask) {
+    if (!_.isEmpty(this._task))
+      this._stack.children.push(this._task);
+
     this._task = {
-      taskId  : line.substring(PREFIX_TASK.length, line.length),
-      data    : '',
-      intent  : {},
-      history : []
+      name: line,
+      intent: {},
+      data: {},
+      children: []
     }
-    this._inTask = true;
-    this._inHistory = false;
+    this._in = 'task';
   }
   // 'mFocusedActivity:'
   else if (isFocus) {
-    this._inTask  = false;
     this._result.focused = JSON.parse(line.split(' ')[1]);
   }
   // 'Recent tasks:'
   else if (isRecent) {
-    this._inTask  = false;
-    this._inRecent = true;
+    this._in = 'recent';
   }
   // 'intent:'
   else if (isIntent) {
-    if (this._inTask) {
-      this._task.intent = JSON.parse(line.split(' ')[1]);
-      this._result.stack[this._stackId].push(this._task);
-    } else if (this._inRecent) {
-      this._recent.intent = JSON.parse(line.split(' ')[1]);
-      this._result.recent.push(this._recent);
-    } else if (this._inHistory) {
-      var k = Object.keys(this._history)[0]
-      this._history[k].intent = JSON.parse(line.split(' ')[1]);
-      var stack = this._result.stack[this._stackId];
-      stack[stack.length - 1].history.push(this._history);
+    var intent = JSON.parse(line.split(' ')[1]);
+    if (this._in === 'recent') {
+      this._recent.intent = intent
+    } else if (this._in === 'task') {
+      this._task.intent = intent
+    } else if (this._in === 'history') {
+      this._history.intent = intent;
+      this._task.children.push(this._history);
     }
-  } else {
-    // task data or history
-    if (this._inTask) {
-      if (!this._task.data)
+  }
+  // task data or history
+  else {
+    if (this._in === 'task' || this._in === 'history') {
+      if (_.isEmpty(this._task.data))
         this._task.data = JSON.parse(line);
       else {
-        this._inTask = false;
-        this._inHistory = true;
+        this._in = 'history'
         this._history = JSON.parse(line);
       }
-    } else if (this._inRecent) {
+    }
+    else {
+      if (!_.isEmpty(this._recent))
+        this._result.recent.push(this._recent);
       this._recent = JSON.parse(line);
     }
   }
@@ -100,6 +107,16 @@ Stack.prototype._transform = function(chunk, encoding, done) {
 }
 
 Stack.prototype._flush = function(done) {
+  // assemble remainder
+  if (!_.isEmpty(this._task))
+    this._stack.children.push(this._task);
+
+  if (!_.isEmpty(this._stack))
+    this._result.stack.children.push(this._stack);
+
+  if (!_.isEmpty(this._recent))
+    this._result.recent.push(this._recent);
+
   this.push(JSON.stringify(this._result, null, 4));
   done();
 }
