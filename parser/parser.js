@@ -75,6 +75,8 @@ Parser.prototype.parseIntentInfo = function(info) {
       result['package'] = i.substring(4);
     else if (i.indexOf('cmp=') == 0)
       result['component'] = i.substring(4);
+    else if (i.indexOf('dat=') == 0)
+      result['data'] = i.substring(4);
     else if (i.indexOf('bnds=') == 0)
       result['bounds'] = i.substring(5);
   });
