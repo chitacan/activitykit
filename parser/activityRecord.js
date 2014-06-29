@@ -28,9 +28,11 @@ ActivityRecord.prototype._transform = function(chunk, encoding, done) {
 
     if (line.indexOf('* Hist') == 0) {
       result['name'] = line.substring(2, idx - 2);
+      result['type'] = 'history'
       this.push(JSON.stringify(result) + P.EOL);
     } else if (line.indexOf('Recent #') == 0) {
       result['name'] = line.substring(0, idx - 2);
+      result['type'] = 'recent'
       this.push(JSON.stringify(result) + P.EOL);
     } else {
       // 'mFocusedActivity:'

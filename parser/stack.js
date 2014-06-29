@@ -50,6 +50,7 @@ Stack.prototype._transform = function(chunk, encoding, done) {
 
     this._stack = {
       name: line,
+      type: 'stack',
       children: []
     }
   }
