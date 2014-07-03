@@ -10,7 +10,8 @@ var Stack = function(opt) {
 
   this._result = {
     stack  : {
-      name: 'Activity Stack',
+      name: 'root',
+      type: 'root',
       children: []
     },
     focused: '',
