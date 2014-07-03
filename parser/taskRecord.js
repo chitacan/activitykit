@@ -21,7 +21,6 @@ TaskRecord.prototype._transform = function(chunk, encoding, done) {
   var idx  = line.indexOf(PREFIX);
   if (idx >= 0) {
     var taskInfo = this.parseTaskInfo(line);
-    taskInfo['type'] = 'task';
 
     // "* TaskRecord{42d6 ..."
     if (idx == 2) {
