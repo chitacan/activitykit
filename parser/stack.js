@@ -42,7 +42,7 @@ Stack.prototype._flushStack = function(name) {
 }
 
 Stack.prototype._flushTask = function(name) {
-  if (!_.isEmpty(this._task))
+  if (!_.isEmpty(this._task) && !_.isEmpty(this._task.data))
     this._stack.children.push(this._task);
 
   this._task = {
