@@ -8,34 +8,42 @@ var adb    = require('adbkit')
   , IN     = require('./parser/intent')
   , client = adb.createClient();
 
-var keywordParser        = new KW()
-  , taskRecordParser     = new TR()
-  , activityRecordParser = new AR()
-  , stackParser          = new ST()
-  , intentParser         = new IN();
+function getActivityInfo() {
 
-client.listDevices()
-.then(function(devices) {
-  if (!devices.length)
-    throw new Error('device not found');
+  var keywordParser        = new KW()
+    , taskRecordParser     = new TR()
+    , activityRecordParser = new AR()
+    , stackParser          = new ST()
+    , intentParser         = new IN();
 
-  // select first one
-  return devices[0];
-})
-.then(function(device) {
-  var cmd = ['dumpsys', 'activity', 'activities'];
-  return client.shell(device.id, cmd);
-})
-.then(function(result) {
-  result
-  .pipe(es.split())
-  .pipe(keywordParser)
-  .pipe(taskRecordParser)
-  .pipe(activityRecordParser)
-  .pipe(intentParser)
-  .pipe(stackParser)
-  .pipe(process.stdout)
-})
-.catch(function(err) {
-  console.log(err);
-});
+  return client.listDevices()
+  .then(function(devices) {
+    if (!devices.length)
+      throw new Error('device not found');
+
+    // select first one
+    return devices[0];
+  })
+  .then(function(device) {
+    var cmd = ['dumpsys', 'activity', 'activities'];
+    return client.shell(device.id, cmd);
+  })
+  .then(function(result) {
+    return result
+    .pipe(es.split())
+    .pipe(keywordParser)
+    .pipe(taskRecordParser)
+    .pipe(activityRecordParser)
+    .pipe(intentParser)
+    .pipe(stackParser)
+    //.pipe(process.stdout)
+  })
+}
+
+if (!module.parent) {
+  getActivityInfo().then(function(stream) {
+    stream.pipe(process.stdout);
+  });
+}
+
+exports.getActivityInfo = getActivityInfo;
