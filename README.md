@@ -4,5 +4,5 @@ Pull various activity infomation from `ActivityManagerService`.
 
 ## requirements
 
-* `adb`
-* Android Supported Device (>= 4.4)
+* Android SDK (especially `adb`)
+* Android Supported Device or emulator (tested on >= 4.4)
