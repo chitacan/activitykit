@@ -53,7 +53,8 @@ Parser.prototype.parseActivityInfo = function(info) {
   result['name']      = '';
   result['hash']      = arr[0];
   result['userId']    = arr[1].substring(1);
-  result['component'] = arr[2]
+  result['package']   = arr[2].split('/').shift();
+  result['component'] = arr[2].split('.').pop();
   result['taskId']    = arr[3].substring(1);
 
   return result;
