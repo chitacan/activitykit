@@ -23,7 +23,6 @@ ActivityRecord.prototype._transform = function(chunk, encoding, done) {
     var startIdx = idx + PREFIX.length;
     var endIdx   = line.length - 1;
 
-    //var activityInfoArray = line.substring(startIdx, endIdx).split(' ');
     var result = this.parseActivityInfo(line);
 
     if (line.indexOf('* Hist') == 0) {

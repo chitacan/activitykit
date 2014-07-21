@@ -36,7 +36,6 @@ function getActivityInfo() {
     .pipe(activityRecordParser)
     .pipe(intentParser)
     .pipe(stackParser)
-    //.pipe(process.stdout)
   })
 }
 
